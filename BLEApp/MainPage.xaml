@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:vm="clr-namespace:BLEApp.model"
+             mc:Ignorable="d"
+             x:Class="BLEApp.MainPage"
+             Title="Bluetooth ">
+
+    <ContentPage.BindingContext>
+        <vm:MainPageModel></vm:MainPageModel>
+    </ContentPage.BindingContext>
+    
+        <StackLayout>
+        <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand">
+
+                <Button x:Name="btnStatus" Text="Status" Clicked="getStatus"/>
+            <Label x:Name="txtErrorBle" Text="                 "></Label>
+                <Button x:Name="btnScan" Text="Scan" Clicked="scan"/>
+                
+            <Button x:Name="btnConnect" Text="Connect" Clicked="connect"/>
+        </StackLayout>
+        <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand">
+                
+                <Button x:Name="btnKnowConnect" Text="Connect known device" Clicked="btnKnowConnect_Clicked"/>
+            </StackLayout>
+            <StackLayout Orientation="Horizontal">
+                <Button x:Name="btnGetServices" Text="Get list of services" Clicked="btnGetServices_Clicked"/>
+            </StackLayout>
+            <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand">
+                <Button x:Name="btnGetcharacters" Text="Get characteristics" Clicked="btnGetcharacters_Clicked"/>
+                <Button x:Name="btnGetRW" Text="Read/Write" Clicked="btnGetRW_Clicked"/>
+                <Button x:Name="btnUpdate" Text="Update" Clicked="btnUpdate_Clicked"/>
+            </StackLayout>
+            
+            <ListView x:Name="lv" ItemSelected="lv_ItemSelected" BackgroundColor="Aquamarine" SeparatorColor="Beige">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <StackLayout>
+                                <Label Text="{Binding NativeDevice.Id}"/>
+                                <Label Text="{Binding NativeDevice.Name}"/>
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackLayout>
+    
+</ContentPage>
