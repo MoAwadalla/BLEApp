@@ -12,7 +12,7 @@
     </ContentPage.BindingContext>
     
         <StackLayout>
-        <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand">
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
 
                 <Button x:Name="btnStatus" Text="Status" Clicked="getStatus"/>
             <Label x:Name="txtErrorBle" Text="                 "></Label>
@@ -20,19 +20,11 @@
                 
             <Button x:Name="btnConnect" Text="Connect" Clicked="connect"/>
         </StackLayout>
-        <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand">
-                
-                <Button x:Name="btnKnowConnect" Text="Connect known device" Clicked="btnKnowConnect_Clicked"/>
-            </StackLayout>
-            <StackLayout Orientation="Horizontal">
-                <Button x:Name="btnGetServices" Text="Get list of services" Clicked="btnGetServices_Clicked"/>
-            </StackLayout>
-            <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand">
-                <Button x:Name="btnGetcharacters" Text="Get characteristics" Clicked="btnGetcharacters_Clicked"/>
-                <Button x:Name="btnGetRW" Text="Read/Write" Clicked="btnGetRW_Clicked"/>
-                <Button x:Name="btnUpdate" Text="Update" Clicked="btnUpdate_Clicked"/>
-            </StackLayout>
-            
+        
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+            <Button x:Name="btnGetServices" Text="Get list of services" Clicked="btnGetServices_Clicked" WidthRequest="300"/>
+        </StackLayout>
+                        
             <ListView x:Name="lv" ItemSelected="lv_ItemSelected" BackgroundColor="Aquamarine" SeparatorColor="Beige">
                 <ListView.ItemTemplate>
                     <DataTemplate>

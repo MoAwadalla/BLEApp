@@ -21,7 +21,7 @@ namespace BLEApp
         IAdapter adapter;
         ObservableCollection<IDevice> deviceList;
         IDevice device;
-
+        View oldPage;
         public MainPage()
         {
             InitializeComponent();
@@ -66,7 +66,7 @@ namespace BLEApp
                 adapter.DeviceDiscovered += (s, a) =>
                   {
                       deviceList.Add(a.Device);
-                      DisplayAlert("Device discovered", "", "Ok");
+                      //DisplayAlert("Device discovered", "", "Ok");
                   };
 
                 await adapter.StartScanningForDevicesAsync();
@@ -95,50 +95,62 @@ namespace BLEApp
             }
         }
 
-        private async void btnKnowConnect_Clicked(object sender, EventArgs e)
-        {
-            try
-            {
-                await adapter.ConnectToKnownDeviceAsync(new Guid("e0cbf06c-cd8b-4647-bb8a-263b43f0f974"));
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlert("Notice", ex.Message.ToString(), "Ok");
-            }
-        }
+        
 
         IList<IService> Services;
         IService Service;
         private async void btnGetServices_Clicked(object sender, EventArgs e)
         {
             Services = (IList<IService>)await device.GetServicesAsync();
-            Service = await device.GetServiceAsync(device.Id);
+            
+            getServicesPage(); //generate new layout
+
+            return;
         }
 
-        IList<ICharacteristic> Characteristics;
-        ICharacteristic Characteristic;
-        private async void btnGetcharacters_Clicked(object sender, EventArgs e)
+        ListView ServicesList;
+        private void getServicesPage()
         {
-            var characteristics = await Service.GetCharacteristicsAsync();
-            Guid idGuid = Guid.Parse("e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
-            Characteristic = await Service.GetCharacteristicAsync(idGuid);
-        }
-
-        private async void btnGetRW_Clicked(object sender, EventArgs e)
-        {
-            var bytes = await Characteristic.ReadAsync();
-            await Characteristic.WriteAsync(bytes);
-        }
-
-        private async void btnUpdate_Clicked(object sender, EventArgs e)
-        {
-            Characteristic.ValueUpdated += (o, args) =>
+            ServicesList = new ListView
             {
-                var bytes = args.Characteristic.Value;
+                ItemsSource = Services,
+                SelectionMode = ListViewSelectionMode.Single,
+
             };
-            await Characteristic.StartUpdatesAsync();
+            ServicesList.ItemSelected += (sender, e) =>
+            {
+                int index = e.SelectedItemIndex;
+                DisplayAlert(Services[index].Name, Services[index].Device.State.ToString(), "Ok");
+            };
+            oldPage = Content;
+            Content =
+                new StackLayout
+                {
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Start,
+
+                    Children = {
+                        new Label
+                        {
+                            Text = "Services"
+                        },
+
+                        new Button
+                        {
+                            Text = "Go Back",
+                            Command = new Command(() =>
+                            {
+                                Content = oldPage;
+                            })
+                        },
+                        ServicesList
+                    }
+                };
         }
 
+       
+
+        
         
 
 
