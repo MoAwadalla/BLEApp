@@ -157,7 +157,9 @@ namespace BLEApp
                 foreach (var i in Characteristics){
                     try
                     {
-                        byte[] bytes = await i.ReadAsync();
+                        //byte[] bytes = await i.ReadAsync();
+                        //task: iterate through characteristics to view deeper info: name, can be read/written/subscribed, use button to read value for read, make way for receiving subscription
+                        //differentiate between characteristics that can be read and updated
                         DisplayAlert(Services[index].Name, Encoding.UTF8.GetString(bytes, 0, bytes.Length), "Ok");
                     }
                     catch
