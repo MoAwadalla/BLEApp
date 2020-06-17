@@ -9,6 +9,7 @@ using Plugin.BLE;
 using Plugin.BLE.Abstractions.Contracts;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices.ComTypes;
+using System.Security.Cryptography;
 
 namespace BLEApp
 {
@@ -124,6 +125,8 @@ namespace BLEApp
 
         ListView ServicesList;
         List<String> ServicesListNames;
+        ICharacteristic characteristic;
+        IList<ICharacteristic> Characteristics;
         private void getServicesPage()
         {
             ServicesListNames = new List<string>();
@@ -144,10 +147,30 @@ namespace BLEApp
                 
             };
 
-            ServicesList.ItemSelected += (sender, e) =>
+            ServicesList.ItemSelected += async (sender, e) =>
             {
                 int index = e.SelectedItemIndex;
-                DisplayAlert(Services[index].Name, device.ToString(), "Ok");
+                Characteristics = (IList<ICharacteristic>) await Services[index].GetCharacteristicsAsync();
+                //characteristic = await Services[index].GetCharacteristicAsync(Services[index].Id);
+                //var bytes = characteristic.Value;
+                //List<string> charStrings = new List<string>();
+                foreach (var i in Characteristics){
+                    try
+                    {
+                        byte[] bytes = await i.ReadAsync();
+                        DisplayAlert(Services[index].Name, Encoding.UTF8.GetString(bytes, 0, bytes.Length), "Ok");
+                    }
+                    catch
+                    {
+                        List<IDescriptor> descriptors = (List<IDescriptor>) await i.GetDescriptorsAsync();
+
+                        DisplayAlert(Services[index].Name, descriptors.ToString(), "Ok");
+                    }
+                    
+                    
+
+                }
+
             };
 
             oldPage = Content;
