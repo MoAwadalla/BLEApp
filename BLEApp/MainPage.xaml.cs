@@ -21,7 +21,7 @@ namespace BLEApp
         IAdapter adapter;
         ObservableCollection<IDevice> deviceList;
         IDevice device;
-
+        View oldPage;
         public MainPage()
         {
             InitializeComponent();
@@ -60,18 +60,26 @@ namespace BLEApp
         {
             try
             {
-                
+                await adapter.StartScanningForDevicesAsync();
+
                 deviceList.Clear();
                 
                 adapter.DeviceDiscovered += (s, a) =>
                   {
-                      deviceList.Add(a.Device);
-                     // DisplayAlert("Device discovered", a.Device.ToString(), "Ok");
+                      if (a.Device != null)
+                      {
+                          if (a.Device.Name != null || !deviceList.Contains(a.Device))
+                          {
+                              deviceList.Add(a.Device);
+                              lv.ItemsSource = deviceList;
+                          }
+                      }
+                      //DisplayAlert("Device discovered", "", "Ok");
                   };
 
-                //await adapter.StartScanningForDevicesAsync();
+                
 
-                lv.ItemsSource = deviceList;
+                
                 if (!adapter.IsScanning)
                 {
                     await adapter.StartScanningForDevicesAsync();
@@ -86,59 +94,80 @@ namespace BLEApp
         private void getStatus(object sender, EventArgs e)
         {
             this.DisplayAlert("Notice", ble.State.ToString(), "Ok");
-            if (ble.State == BluetoothState.Off)
-            {
-                txtErrorBle.Text = "Your Bluetooth is off";
-            } else
-            {
-                txtErrorBle.Text = "                 ";
-            }
+            
         }
 
-        private async void btnKnowConnect_Clicked(object sender, EventArgs e)
-        {
-            try
-            {
-                await adapter.ConnectToKnownDeviceAsync(new Guid("e0cbf06c-cd8b-4647-bb8a-263b43f0f974"));
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlert("Notice", ex.Message.ToString(), "Ok");
-            }
-        }
+        
 
         IList<IService> Services;
         IService Service;
         private async void btnGetServices_Clicked(object sender, EventArgs e)
         {
             Services = (IList<IService>)await device.GetServicesAsync();
-            Service = await device.GetServiceAsync(device.Id);
+            
+            getServicesPage(); //generate new layout
+            
+            return;
         }
 
-        IList<ICharacteristic> Characteristics;
-        ICharacteristic Characteristic;
-        private async void btnGetcharacters_Clicked(object sender, EventArgs e)
+        ListView ServicesList;
+        List<String> ServicesListNames;
+        private void getServicesPage()
         {
-            var characteristics = await Service.GetCharacteristicsAsync();
-            Guid idGuid = Guid.Parse("e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
-            Characteristic = await Service.GetCharacteristicAsync(idGuid);
-        }
-
-        private async void btnGetRW_Clicked(object sender, EventArgs e)
-        {
-            var bytes = await Characteristic.ReadAsync();
-            await Characteristic.WriteAsync(bytes);
-        }
-
-        private async void btnUpdate_Clicked(object sender, EventArgs e)
-        {
-            Characteristic.ValueUpdated += (o, args) =>
+            ServicesListNames = new List<string>();
+            foreach (IService i in Services)
             {
-                var bytes = args.Characteristic.Value;
+                ServicesListNames.Add(i.Name);
+            }
+
+
+
+
+            ServicesList = new ListView
+            {
+                ItemsSource = ServicesListNames,
+                SelectionMode = ListViewSelectionMode.Single,
+                SeparatorColor = Color.Black,
+                BackgroundColor = Color.Transparent,
+                
             };
-            await Characteristic.StartUpdatesAsync();
+
+            ServicesList.ItemSelected += (sender, e) =>
+            {
+                int index = e.SelectedItemIndex;
+                DisplayAlert(Services[index].Name, device.ToString(), "Ok");
+            };
+
+            oldPage = Content;
+
+            Content =
+                new StackLayout
+                {
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Start,
+
+                    Children = {
+                        new Label
+                        {
+                            Text = "Services"
+                        },
+
+                        new Button
+                        {
+                            Text = "Go Back",
+                            Command = new Command(() =>
+                            {
+                                Content = oldPage;
+                            })
+                        },
+                        ServicesList
+                    }
+                };
         }
 
+       
+
+        
         
 
 
@@ -151,9 +180,6 @@ namespace BLEApp
             device = lv.SelectedItem as IDevice;
         }
 
-        private void txtErrorBle_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-
-        }
+       
     }
 }
