@@ -15,7 +15,7 @@
         <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
 
                 <Button x:Name="btnStatus" Text="Status" Clicked="getStatus"/>
-            <Label x:Name="txtErrorBle" Text="                 "></Label>
+            
                 <Button x:Name="btnScan" Text="Scan" Clicked="scan"/>
                 
             <Button x:Name="btnConnect" Text="Connect" Clicked="connect"/>
@@ -25,13 +25,13 @@
             <Button x:Name="btnGetServices" Text="Get list of services" Clicked="btnGetServices_Clicked" WidthRequest="300"/>
         </StackLayout>
                         
-            <ListView x:Name="lv" ItemSelected="lv_ItemSelected" BackgroundColor="Aquamarine" SeparatorColor="Beige">
+            <ListView x:Name="lv" ItemSelected="lv_ItemSelected" BackgroundColor="Transparent" SeparatorColor="Beige">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
                             <StackLayout>
-                                <Label Text="{Binding NativeDevice.Id}"/>
                                 <Label Text="{Binding NativeDevice.Name}"/>
+                                
                             </StackLayout>
                         </ViewCell>
                     </DataTemplate>

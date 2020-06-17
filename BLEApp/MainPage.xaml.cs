@@ -60,18 +60,26 @@ namespace BLEApp
         {
             try
             {
-                
+                await adapter.StartScanningForDevicesAsync();
+
                 deviceList.Clear();
                 
                 adapter.DeviceDiscovered += (s, a) =>
                   {
-                      deviceList.Add(a.Device);
+                      if (a.Device != null)
+                      {
+                          if (a.Device.Name != null || !deviceList.Contains(a.Device))
+                          {
+                              deviceList.Add(a.Device);
+                              lv.ItemsSource = deviceList;
+                          }
+                      }
                       //DisplayAlert("Device discovered", "", "Ok");
                   };
 
-                await adapter.StartScanningForDevicesAsync();
+                
 
-                lv.ItemsSource = deviceList;
+                
                 if (!adapter.IsScanning)
                 {
                     await adapter.StartScanningForDevicesAsync();
@@ -86,13 +94,7 @@ namespace BLEApp
         private void getStatus(object sender, EventArgs e)
         {
             this.DisplayAlert("Notice", ble.State.ToString(), "Ok");
-            if (ble.State == BluetoothState.Off)
-            {
-                txtErrorBle.Text = "Your Bluetooth is off";
-            } else
-            {
-                txtErrorBle.Text = "";
-            }
+            
         }
 
         
@@ -104,25 +106,40 @@ namespace BLEApp
             Services = (IList<IService>)await device.GetServicesAsync();
             
             getServicesPage(); //generate new layout
-
+            
             return;
         }
 
         ListView ServicesList;
+        List<String> ServicesListNames;
         private void getServicesPage()
         {
+            ServicesListNames = new List<string>();
+            foreach (IService i in Services)
+            {
+                ServicesListNames.Add(i.Name);
+            }
+
+
+
+
             ServicesList = new ListView
             {
-                ItemsSource = Services,
+                ItemsSource = ServicesListNames,
                 SelectionMode = ListViewSelectionMode.Single,
-
+                SeparatorColor = Color.Black,
+                BackgroundColor = Color.Transparent,
+                
             };
+
             ServicesList.ItemSelected += (sender, e) =>
             {
                 int index = e.SelectedItemIndex;
-                DisplayAlert(Services[index].Name, Services[index].Device.State.ToString(), "Ok");
+                DisplayAlert(Services[index].Name, device.ToString(), "Ok");
             };
+
             oldPage = Content;
+
             Content =
                 new StackLayout
                 {
@@ -163,9 +180,6 @@ namespace BLEApp
             device = lv.SelectedItem as IDevice;
         }
 
-        private void txtErrorBle_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-
-        }
+       
     }
 }
