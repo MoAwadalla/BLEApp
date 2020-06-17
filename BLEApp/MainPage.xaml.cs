@@ -66,10 +66,10 @@ namespace BLEApp
                 adapter.DeviceDiscovered += (s, a) =>
                   {
                       deviceList.Add(a.Device);
-                      DisplayAlert("Device discovered", "", "Ok");
+                     // DisplayAlert("Device discovered", a.Device.ToString(), "Ok");
                   };
 
-                await adapter.StartScanningForDevicesAsync();
+                //await adapter.StartScanningForDevicesAsync();
 
                 lv.ItemsSource = deviceList;
                 if (!adapter.IsScanning)
@@ -91,7 +91,7 @@ namespace BLEApp
                 txtErrorBle.Text = "Your Bluetooth is off";
             } else
             {
-                txtErrorBle.Text = "";
+                txtErrorBle.Text = "                 ";
             }
         }
 
