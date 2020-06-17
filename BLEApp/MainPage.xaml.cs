@@ -29,7 +29,14 @@ namespace BLEApp
             adapter = CrossBluetoothLE.Current.Adapter;
             deviceList = new ObservableCollection<IDevice>();
             lv.ItemsSource = deviceList;
+            lv.RefreshCommand = new Command(() =>
+                {
+                    lv.IsRefreshing = false;
 
+                    scan(new object(), new EventArgs());
+
+
+                }); 
             
         }
 
@@ -41,6 +48,7 @@ namespace BLEApp
                 if(device != null)
                 {
                     await adapter.ConnectToDeviceAsync(device);
+                    DisplayAlert("Connected to:", device.Name.ToString(), "Ok");
                 }
                 else
                 {
@@ -60,6 +68,7 @@ namespace BLEApp
         {
             try
             {
+                lv.IsRefreshing = false;
                 await adapter.StartScanningForDevicesAsync();
 
                 deviceList.Clear();
@@ -93,7 +102,7 @@ namespace BLEApp
         }
         private void getStatus(object sender, EventArgs e)
         {
-            this.DisplayAlert("Notice", ble.State.ToString(), "Ok");
+            this.DisplayAlert("Status", ble.State.ToString(), "Ok");
         }
 
         
@@ -102,11 +111,15 @@ namespace BLEApp
      //   IService Service;
         private async void btnGetServices_Clicked(object sender, EventArgs e)
         {
+            if (device == null)
+            {
+                return;
+            }
             Services = (IList<IService>)await device.GetServicesAsync();
             
             getServicesPage(); //generate new layout
             
-            return;
+            
         }
 
         ListView ServicesList;
@@ -140,15 +153,18 @@ namespace BLEApp
             oldPage = Content;
 
             Content =
+
                 new StackLayout
                 {
-                    HorizontalOptions = LayoutOptions.Center,
+                    HorizontalOptions = LayoutOptions.CenterAndExpand,
                     VerticalOptions = LayoutOptions.Start,
 
                     Children = {
                         new Label
                         {
-                            Text = "Services"
+                            Text = "Services",
+                            FontSize = 20,
+                            TextColor = Color.Black,
                         },
 
                         new Button
@@ -179,6 +195,8 @@ namespace BLEApp
             device = lv.SelectedItem as IDevice;
         }
 
-       
+        
+
+
     }
 }

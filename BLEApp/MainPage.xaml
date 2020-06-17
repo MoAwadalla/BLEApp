@@ -5,7 +5,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:vm="clr-namespace:BLEApp.model"
              mc:Ignorable="d"
              x:Class="BLEApp.MainPage"
-             Title="Bluetooth ">
+             Title="BLE App">
+    <ContentPage.Title Text ="BLE App" />
+
 
     <ContentPage.BindingContext>
         <vm:MainPageModel></vm:MainPageModel>
@@ -23,20 +25,22 @@
         
         <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
             <Button x:Name="btnGetServices" Text="Get list of services" Clicked="btnGetServices_Clicked" WidthRequest="300"/>
+            <Label></Label>
         </StackLayout>
-                        
-            <ListView x:Name="lv" ItemSelected="lv_ItemSelected" BackgroundColor="Transparent" SeparatorColor="Beige">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <StackLayout>
-                                <Label Text="{Binding NativeDevice.Name}"/>
-                                
-                            </StackLayout>
-                        </ViewCell>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </StackLayout>
+
+        <ListView x:Name="lv" ItemSelected="lv_ItemSelected" BackgroundColor="Transparent" SeparatorColor="Black" IsPullToRefreshEnabled="True">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <StackLayout>
+                            <Label Text="{Binding NativeDevice.Name}" TextColor="Black"/>
+
+                        </StackLayout>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+    </StackLayout>
     
 </ContentPage>
