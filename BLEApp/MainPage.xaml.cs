@@ -64,17 +64,16 @@ namespace BLEApp
 
                 deviceList.Clear();
                 
-                adapter.DeviceDiscovered += (s, a) =>
+               adapter.DeviceDiscovered += (s, a) =>
                   {
-                      if (a.Device != null)
+                      if (!deviceList.Contains(a.Device) && a.Device.Name != null)
                       {
-                          if (a.Device.Name != null || !deviceList.Contains(a.Device))
-                          {
-                              deviceList.Add(a.Device);
-                              lv.ItemsSource = deviceList;
-                          }
+                          deviceList.Add(a.Device);
+                          lv.ItemsSource = deviceList;
                       }
-                      //DisplayAlert("Device discovered", "", "Ok");
+                      
+                      
+                     // DisplayAlert("Device discovered", a.Device.Name, "Ok");
                   };
 
                 
@@ -90,17 +89,17 @@ namespace BLEApp
             {
                 await DisplayAlert("Notice", ex.Message.ToString(), "Error");
             }
+            lv.ItemsSource = deviceList;
         }
         private void getStatus(object sender, EventArgs e)
         {
             this.DisplayAlert("Notice", ble.State.ToString(), "Ok");
-            
         }
 
         
 
         IList<IService> Services;
-        IService Service;
+     //   IService Service;
         private async void btnGetServices_Clicked(object sender, EventArgs e)
         {
             Services = (IList<IService>)await device.GetServicesAsync();
