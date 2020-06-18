@@ -10,6 +10,7 @@ using Plugin.BLE.Abstractions.Contracts;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography;
+using Xamarin.Essentials;
 
 namespace BLEApp
 {
@@ -23,12 +24,16 @@ namespace BLEApp
         ObservableCollection<IDevice> deviceList;
         IDevice device;
         View oldPage;
+        View oldServicesPage;
         public MainPage()
         {
             InitializeComponent();
             ble = CrossBluetoothLE.Current;
             adapter = CrossBluetoothLE.Current.Adapter;
             deviceList = new ObservableCollection<IDevice>();
+
+            //var status = Permissions.RequestAsync<Permissions.LocationAlways>();
+
             lv.ItemsSource = deviceList;
             lv.RefreshCommand = new Command(() =>
                 {
@@ -127,17 +132,33 @@ namespace BLEApp
         List<String> ServicesListNames;
         ICharacteristic characteristic;
         IList<ICharacteristic> Characteristics;
+        ListView charList;
+        List<String> CharacteristicsListNames;
+        Picker picker;
+        List<String> DataFormats;
         private void getServicesPage()
         {
+            //get and print each service
             ServicesListNames = new List<string>();
             foreach (IService i in Services)
             {
                 ServicesListNames.Add(i.Name);
             }
 
+            //User chooses output type
+            DataFormats = new List<String>();
+            DataFormats.Add("UTF-8 String");
+            DataFormats.Add("Int32");
+            DataFormats.Add("Hex");
+            picker = new Picker
+            {
+                Title = "Data Format",
+                TitleColor = Color.Black,
+                ItemsSource = DataFormats,
+                BackgroundColor = Color.White,
+            };
 
-
-
+            //Creats list to view services
             ServicesList = new ListView
             {
                 ItemsSource = ServicesListNames,
@@ -146,35 +167,112 @@ namespace BLEApp
                 BackgroundColor = Color.Transparent,
                 
             };
-
-            ServicesList.ItemSelected += async (sender, e) =>
+            //when a service is tapped
+            ServicesList.ItemTapped += async (sender, e) =>
             {
-                int index = e.SelectedItemIndex;
+                //create backup for previous screen
+                oldServicesPage = Content;
+
+                //get index of service
+                int index = e.ItemIndex;                
+                
+                //gather characteristics and put in list
                 Characteristics = (IList<ICharacteristic>) await Services[index].GetCharacteristicsAsync();
-                //characteristic = await Services[index].GetCharacteristicAsync(Services[index].Id);
-                //var bytes = characteristic.Value;
-                //List<string> charStrings = new List<string>();
-                foreach (var i in Characteristics){
-                    try
-                    {
-                        //byte[] bytes = await i.ReadAsync();
-                        //task: iterate through characteristics to view deeper info: name, can be read/written/subscribed, use button to read value for read, make way for receiving subscription
-                        //differentiate between characteristics that can be read and updated
-                        DisplayAlert(Services[index].Name, Encoding.UTF8.GetString(bytes, 0, bytes.Length), "Ok");
-                    }
-                    catch
-                    {
-                        List<IDescriptor> descriptors = (List<IDescriptor>) await i.GetDescriptorsAsync();
 
-                        DisplayAlert(Services[index].Name, descriptors.ToString(), "Ok");
-                    }
-                    
-                    
-
+                CharacteristicsListNames = new List<string>();
+                foreach (ICharacteristic i in Characteristics)
+                {
+                    CharacteristicsListNames.Add(i.Name);
                 }
+                
+                //listview for each characteristic
+                charList = new ListView
+                {
+                    ItemsSource = CharacteristicsListNames,
+                    SelectionMode = ListViewSelectionMode.Single,
+                    SeparatorColor = Color.Black,
+                    BackgroundColor = Color.Transparent
+                };
+                //when a characteristic is tapped
+                charList.ItemTapped += async (s, o) =>
+                {
+                    //get characteristic through index
+                    int indexChar = o.ItemIndex;                    
+                    var currentChar = Characteristics[indexChar];
+                    
+                    //if the characteristic is readable...
+                    if (currentChar.CanRead)
+                    {
+                        try
+                        {
+                            //print characteristic based on chosen data
+                            var bytes = await currentChar.ReadAsync();
+                            if (picker.SelectedItem.Equals("UTF-8 String"))
+                            {
+                                await DisplayAlert(currentChar.Name, Encoding.UTF8.GetString(bytes, 0, bytes.Length), "Ok");
+                            } else if (picker.SelectedItem.Equals("Int32"))
+                            {
+                                await DisplayAlert(currentChar.Name, Convert.ToInt32(bytes).ToString(), "Ok");
+                            } else if (picker.SelectedItem.Equals("Hex"))
+                            {
+                                await DisplayAlert(currentChar.Name, BitConverter.ToString(bytes), "Ok");
+                            } else
+                            {
+                                await DisplayAlert(currentChar.Name, Encoding.UTF8.GetString(bytes, 0, bytes.Length), "Ok");
+                            }
+                        }
+                        catch
+                        {
+                            //defaults to string if error occurs
+                            await DisplayAlert(currentChar.Name, currentChar.Value.ToString(), "Ok");
+                        }
+                    //if characteristic is updatable
+                    } else if (currentChar.CanUpdate)
+                    {
+                        //NOT YET FINISHED...should create a subscription system
+                        await currentChar.StartUpdatesAsync();
+                        var desc = currentChar.GetDescriptorAsync(currentChar.Id);
+                        DisplayAlert(currentChar.Name, desc.ToString() , "Ok");
+                        await currentChar.StopUpdatesAsync();
+                    }
+
+
+
+                };
+                //characteristics page
+                Content = new StackLayout
+                {
+                    HorizontalOptions = LayoutOptions.CenterAndExpand,
+                    VerticalOptions = LayoutOptions.Start,
+
+                    Children = {
+                        new Label
+                        {
+                            Text = Services[index].Name,
+                            FontSize = 20,
+                            TextColor = Color.Black,
+                        },
+
+                        new Button
+                        {
+                            Text = "Go Back",
+                            Command = new Command(() =>
+                            {
+                                Content = oldServicesPage;
+                            })
+                        },
+                        charList,
+                        picker,
+                    }
+                };           
+                    
+                    
+
+                
 
             };
-
+            
+            //services page
             oldPage = Content;
 
             Content =
