@@ -183,6 +183,7 @@ namespace BLEApp
                 foreach (ICharacteristic i in Characteristics)
                 {
                     CharacteristicsListNames.Add(i.Name);
+                    var test = await i.GetDescriptorsAsync();
                 }
                 
                 //listview for each characteristic
@@ -231,7 +232,7 @@ namespace BLEApp
                     {
                         //NOT YET FINISHED...should create a subscription system
                         await currentChar.StartUpdatesAsync();
-                        var desc = currentChar.GetDescriptorAsync(currentChar.Id);
+                        var desc = currentChar.GetDescriptorAsync(Services[index].Id);
                         DisplayAlert(currentChar.Name, desc.ToString() , "Ok");
                         await currentChar.StopUpdatesAsync();
                     }
